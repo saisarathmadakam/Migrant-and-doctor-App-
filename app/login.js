@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getPatientDatabase } from './dataStore'; // Correct import
-import i18n, { setLanguage } from './translations';
+import { getPatientDatabase } from './dataStore';
+import i18n from './translations';
 
 export default function PatientLoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -14,11 +14,11 @@ export default function PatientLoginScreen() {
   const [generatedOtp, setGeneratedOtp] = useState('');
 
   const sendOtp = async () => {
-    // Now, we await the database before we can use it
     const patientDatabase = await getPatientDatabase();
 
     if (phoneNumber.length === 10) {
       if (!patientDatabase[phoneNumber]) {
+        // Since there is no signup, we alert the user that the account doesn't exist
         Alert.alert(i18n.t('accountNotFound'), i18n.t('invalidPhoneNumber'));
         return;
       }
@@ -33,7 +33,6 @@ export default function PatientLoginScreen() {
   };
 
   const verifyOtp = async () => {
-    // We also need the database to verify the user
     const patientDatabase = await getPatientDatabase();
 
     if (otp === generatedOtp) {
@@ -53,11 +52,6 @@ export default function PatientLoginScreen() {
       Alert.alert(i18n.t('error'), i18n.t('invalidOtp'));
       setOtp('');
     }
-  };
-
-  const handleLanguageChange = (lang) => {
-    setLanguage(lang);
-    setPhoneNumber(prev => prev);
   };
 
   return (
@@ -101,31 +95,11 @@ export default function PatientLoginScreen() {
           </View>
         )}
         
-        <TouchableOpacity onPress={() => router.push('/patient-signup')}>
-          <Text style={styles.linkText}>{i18n.t('dontHaveAccount')} <Text style={styles.linkTextBold}>{i18n.t('signUp')}</Text></Text>
-        </TouchableOpacity>
+        {/* The signup link is now removed */}
 
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backText}>{i18n.t('goBack')}</Text>
         </TouchableOpacity>
-        
-        <View style={styles.languageContainer}>
-          <TouchableOpacity onPress={() => handleLanguageChange('en')}>
-            <Text style={styles.languageText}>English</Text>
-          </TouchableOpacity>
-          <Text style={styles.languageSeparator}>|</Text>
-          <TouchableOpacity onPress={() => handleLanguageChange('te')}>
-            <Text style={styles.languageText}>తెలుగు</Text>
-          </TouchableOpacity>
-          <Text style={styles.languageSeparator}>|</Text>
-          <TouchableOpacity onPress={() => handleLanguageChange('hi')}>
-            <Text style={styles.languageText}>हिन्दी</Text>
-          </TouchableOpacity>
-          <Text style={styles.languageSeparator}>|</Text>
-          <TouchableOpacity onPress={() => handleLanguageChange('ml')}>
-            <Text style={styles.languageText}>മലയാളം</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -190,28 +164,5 @@ const styles = StyleSheet.create({
     color: '#00796B',
     fontSize: 16,
     textDecorationLine: 'underline',
-  },
-  linkText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#00796B',
-  },
-  linkTextBold: {
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
-  languageContainer: {
-    flexDirection: 'row',
-    marginTop: 30,
-    paddingHorizontal: 20,
-  },
-  languageText: {
-    color: '#00796B',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  languageSeparator: {
-    color: '#00796B',
-    marginHorizontal: 10,
   },
 });

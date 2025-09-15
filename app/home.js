@@ -1,16 +1,16 @@
-//Displays Apps -> Doctor App & Patient App
+// File: home.js
+
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import i18n from './translations';
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      {/* Hospital Symbol on top */}
       <MaterialCommunityIcons name="hospital-building" size={70} color="#00796B" style={styles.icon} />
-
-      <Text style={styles.title}>Choose Your Login</Text>
+      <Text style={styles.title}>{('chooseYourLogin')}</Text>
       
       {/* Patient Login Button */}
       <TouchableOpacity
@@ -18,7 +18,7 @@ export default function HomeScreen() {
         onPress={() => router.push('/login')}
       >
         <MaterialCommunityIcons name="account-heart" size={26} color="#fff" style={styles.btnIcon} />
-        <Text style={styles.buttonText}>Migrant Login</Text>
+        <Text style={styles.buttonText}>{i18n.t('patientLogin')}</Text>
       </TouchableOpacity>
       
       {/* Doctor Login Button */}
@@ -27,7 +27,7 @@ export default function HomeScreen() {
         onPress={() => router.push('/login1')}
       >
         <MaterialCommunityIcons name="stethoscope" size={26} color="#fff" style={styles.btnIcon} />
-        <Text style={styles.buttonText}>Doctor Login</Text>
+        <Text style={styles.buttonText}>{i18n.t('doctorLogin')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     color: '#00796B',
   },
   button: {
-    flexDirection: 'row', // to place icon & text side by side
+    flexDirection: 'row',
     width: '80%',
     height: 60,
     backgroundColor: '#00796B',

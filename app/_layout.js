@@ -20,7 +20,8 @@ export default function Layout() {
         }}
       />
       <Stack.Screen name="patient-dashboard" />
-      <Stack.Screen name="doctor-dashboard" /> {/* Add this line */}
+      <Stack.Screen name="doctor-dashboard" />
+      
     </Stack>
   );
 }

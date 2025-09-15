@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 50,
+   marginBottom:20,
     color: '#00796B',
   },
   formContainer: {

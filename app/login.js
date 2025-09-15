@@ -1,10 +1,14 @@
 // File: login.js
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { 
+  View, Text, TextInput, TouchableOpacity, 
+  StyleSheet, KeyboardAvoidingView, Platform, 
+  Alert, Image 
+} from 'react-native';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getPatientDatabase } from './dataStore';
+import { getPatientDatabase } from './dataStore'; 
 import i18n from './translations';
 
 export default function PatientLoginScreen() {
@@ -18,11 +22,9 @@ export default function PatientLoginScreen() {
 
     if (phoneNumber.length === 10) {
       if (!patientDatabase[phoneNumber]) {
-        // Since there is no signup, we alert the user that the account doesn't exist
         Alert.alert(i18n.t('accountNotFound'), i18n.t('invalidPhoneNumber'));
         return;
       }
-      
       const newOtp = '123456'; 
       setGeneratedOtp(newOtp);
       Alert.alert(i18n.t('otpSent'), `${i18n.t('yourOTP')} ${newOtp} (${i18n.t('mockOtp')})`);
@@ -38,14 +40,15 @@ export default function PatientLoginScreen() {
     if (otp === generatedOtp) {
       const patientData = patientDatabase[phoneNumber];
       if (patientData) {
+        // 🚀 CRITICAL FIX: Ensure 'records' is an array before navigating.
+        // If it's undefined or null, set it to an empty array.
+        if (!Array.isArray(patientData.records)) {
+          patientData.records = [];
+        }
+
         router.replace({
           pathname: '/patient-dashboard',
-          params: { 
-            patientId: patientData.id,
-            fullName: patientData.fullName,
-            address: patientData.address,
-            age: patientData.age,
-          },
+          params: patientData,
         });
       }
     } else {
@@ -60,42 +63,54 @@ export default function PatientLoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.container}>
-        <MaterialCommunityIcons name="account-heart" size={70} color="#00796B" style={styles.icon} />
-        <Text style={styles.title}>{i18n.t('patientLogin')}</Text>
-
-        {!isOtpSent ? (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>{i18n.t('enterPhoneNumber')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={i18n.t('enterPhoneNumber')}
-              keyboardType="phone-pad"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              maxLength={10}
-            />
-            <TouchableOpacity style={styles.button} onPress={sendOtp}>
-              <Text style={styles.buttonText}>{i18n.t('sendOTP')}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>{i18n.t('enterOTP')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={i18n.t('enterOTP')}
-              keyboardType="number-pad"
-              value={otp}
-              onChangeText={setOtp}
-              maxLength={6}
-            />
-            <TouchableOpacity style={styles.button} onPress={verifyOtp}>
-              <Text style={styles.buttonText}>{i18n.t('verifyOTP')}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Image 
+          source={require('../assets/images/migrant.jpg')} 
+          style={styles.heroImage} 
+          resizeMode="contain"
+        />
         
-        {/* The signup link is now removed */}
+        <Text style={styles.title}>{i18n.t('patientLogin')}</Text>
+        <Text style={styles.subtitle}>Your Health, Our Priority</Text>
+
+        <View style={styles.card}>
+          {!isOtpSent ? (
+            <View style={styles.formContainer}>
+              <Text style={styles.label}>{i18n.t('enterPhoneNumber')}</Text>
+              <View style={styles.inputWrapper}>
+                <MaterialCommunityIcons name="cellphone" size={22} color="#00796B" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={i18n.t('enterPhoneNumber')}
+                  keyboardType="phone-pad"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  maxLength={10}
+                />
+              </View>
+              <TouchableOpacity style={styles.button} onPress={sendOtp}>
+                <Text style={styles.buttonText}>{i18n.t('sendOTP')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.formContainer}>
+              <Text style={styles.label}>{i18n.t('enterOTP')}</Text>
+              <View style={styles.inputWrapper}>
+                <MaterialCommunityIcons name="key-variant" size={22} color="#00796B" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={i18n.t('enterOTP')}
+                  keyboardType="number-pad"
+                  value={otp}
+                  onChangeText={setOtp}
+                  maxLength={6}
+                />
+              </View>
+              <TouchableOpacity style={styles.button} onPress={verifyOtp}>
+                <Text style={styles.buttonText}>{i18n.t('verifyOTP')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backText}>{i18n.t('goBack')}</Text>
@@ -114,36 +129,66 @@ const styles = StyleSheet.create({
     padding: 25,
   },
   icon: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 50,
     color: '#00796B',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 15,
+  },
+  heroImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 40,
+    borderRadius: 100,
+  },
+  card: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    marginBottom: 50,
   },
   formContainer: {
-    width: '80%',
-    marginBottom: 20,
+    width: '100%',
   },
   label: {
     fontSize: 16,
     color: '#00796B',
     marginBottom: 8,
   },
-  input: {
-    backgroundColor: '#fff',
-    height: 50,
-    paddingHorizontal: 15,
-    borderRadius: 12,
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9F9F9',
     borderWidth: 1,
     borderColor: '#ddd',
-    fontSize: 16,
+    borderRadius: 12,
     marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
   },
   button: {
     width: '100%',
-    height: 60,
+    height: 55,
     backgroundColor: '#00796B',
     borderRadius: 12,
     justifyContent: 'center',
@@ -156,11 +201,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   backText: {
-    marginTop: 20,
+    marginTop: 10,
     color: '#00796B',
     fontSize: 16,
     textDecorationLine: 'underline',

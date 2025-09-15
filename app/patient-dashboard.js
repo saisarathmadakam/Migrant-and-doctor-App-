@@ -1,67 +1,90 @@
 // File: patient-dashboard.js
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import { getPatientDatabase } from './dataStore';
 import i18n from './translations';
+import { getPatientDatabase } from './dataStore';
 
 export default function PatientDashboardScreen() {
   const params = useLocalSearchParams();
-  const { patientId, fullName, address, age } = params;
-  const [isProfileVisible, setIsProfileVisible] = useState(false);
-  const [patientData, setPatientData] = useState(null);
+  const { 
+    id, fullName, age, gender, contact, district, city, village, 
+    migrantType, chronicDiseases, pregnancyDetails, 
+    returneeDetails, incomingDetails
+  } = params;
+  
+  const [patientRecords, setPatientRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      // Safely get data. If it's null or undefined, default to an empty object.
-      const allData = await getPatientDatabase();
-      const patient = Object.values(allData || {}).find(
-        (p) => p.id.toLowerCase() === patientId.toLowerCase()
-      );
-      setPatientData(patient);
+    const fetchRecords = async () => {
+      try {
+        // Fetch the entire patient database to get the latest records
+        const allPatients = await getPatientDatabase();
+        const currentPatient = allPatients[contact]; // Use 'contact' as the unique key
+        
+        if (currentPatient && Array.isArray(currentPatient.records)) {
+          setPatientRecords(currentPatient.records);
+        } else {
+          setPatientRecords([]); // Ensure records is always an array
+        }
+      } catch (error) {
+        console.error("Failed to fetch patient records:", error);
+        setPatientRecords([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
-  }, [patientId]);
+    fetchRecords();
+  }, [contact]); // Depend on 'contact' to re-fetch if the patient changes
 
-  const toggleProfile = () => {
-    setIsProfileVisible(!isProfileVisible);
-  };
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#00796B" />
+        <Text style={styles.loadingText}>{i18n.t('loadingRecords')}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{i18n.t('patientDashboard')}</Text>
-        <TouchableOpacity onPress={toggleProfile} style={styles.profileIconContainer}>
-          <MaterialCommunityIcons 
-            name="account-circle" 
-            size={40} 
-            color="#00796B"
-          />
-        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        
-        {isProfileVisible && (
-          <View style={styles.profileContainer}>
-            <MaterialCommunityIcons name="account-circle" size={80} color="#00796B" />
-            <View style={styles.profileText}>
-              <Text style={styles.profileName}>{fullName || 'Patient Profile'}</Text>
-              <Text style={styles.profileId}>{i18n.t('id')}: {patientId || 'N/A'}</Text>
-              <Text style={styles.profileInfo}>{i18n.t('age')}: {age || 'N/A'}</Text>
-              <Text style={styles.profileInfo}>{i18n.t('address')}: {address || 'N/A'}</Text>
-            </View>
+        <View style={styles.profileContainer}>
+          <MaterialCommunityIcons name="account-circle" size={80} color="#00796B" />
+          <View style={styles.profileText}>
+            <Text style={styles.profileName}>{fullName || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>{i18n.t('id')}: {id || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>{i18n.t('age')}: {age || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>{i18n.t('gender')}: {gender || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>{i18n.t('contact')}: {contact || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>{i18n.t('location')}: {village || 'N/A'}, {city || 'N/A'}, {district || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>Migration Type: {migrantType || 'N/A'}</Text>
+            <Text style={styles.profileInfo}>Chronic Diseases: {chronicDiseases || 'N/A'}</Text>
+            {gender === 'Female' && (
+              <Text style={styles.profileInfo}>Pregnancy Details: {pregnancyDetails || 'N/A'}</Text>
+            )}
+            {migrantType === 'Returnee' && (
+              <Text style={styles.profileInfo}>Returnee Details: {returneeDetails || 'N/A'}</Text>
+            )}
+            {migrantType === 'Incoming' && (
+              <Text style={styles.profileInfo}>Incoming Details: {incomingDetails || 'N/A'}</Text>
+            )}
           </View>
-        )}
-        
+        </View>
+
         <Text style={styles.recordsTitle}>{i18n.t('myMedicalRecords')}</Text>
         
-        {patientData && patientData.records && patientData.records.length > 0 ? (
+        {patientRecords.length > 0 ? (
           <View style={styles.recordsList}>
-            {patientData.records.map((record, index) => (
+            {patientRecords.map((record, index) => (
               <View key={index} style={styles.recordItem}>
                 {record.imageUri && (
                   <Image source={{ uri: record.imageUri }} style={styles.recordImage} />
@@ -86,9 +109,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#E0F7FA',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#00796B',
+  },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     padding: 20,
@@ -104,9 +137,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#00796B',
-  },
-  profileIconContainer: {
-    padding: 5,
   },
   scrollContent: {
     padding: 25,
@@ -128,20 +158,17 @@ const styles = StyleSheet.create({
   },
   profileText: {
     marginLeft: 20,
+    flex: 1,
   },
   profileName: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#00796B',
   },
-  profileId: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
-  },
   profileInfo: {
     fontSize: 14,
     color: '#666',
+    marginTop: 5,
   },
   recordsTitle: {
     fontSize: 22,

@@ -1,25 +1,21 @@
-// File: app/patient-tabs/_layout.js
-
-import React from 'react';
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import i18n from '../translations'; // Use '..' to go up one directory
+import React from 'react';
+import i18n from '../translations';
 
-export default function PatientTabsLayout() {
+export default function PatientTabs() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: '#00796B',
-        tabBarInactiveTintColor: '#999',
-        headerShown: false, 
-      }}
-    >
-      <Tabs.Screen
+    <Tabs screenOptions={{ 
+      headerShown: false, 
+      tabBarActiveTintColor: '#00796B',
+      tabBarLabelStyle: { fontSize: 12 },
+    }}>
+      <Tabs.Screen 
         name="dashboard"
         options={{
           title: i18n.t('dashboard'),
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="view-dashboard" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="view-dashboard-outline" size={size} color={color} />
           ),
         }}
       />
@@ -27,8 +23,17 @@ export default function PatientTabsLayout() {
         name="records"
         options={{
           title: i18n.t('records'),
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="clipboard-text" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="clipboard-text-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="schemes"
+        options={{
+          title: i18n.t('schemes'),
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="hospital-box-outline" size={size} color={color} />
           ),
         }}
       />
@@ -36,8 +41,8 @@ export default function PatientTabsLayout() {
         name="profile"
         options={{
           title: i18n.t('profile'),
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="account-circle" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-circle-outline" size={size} color={color} />
           ),
         }}
       />

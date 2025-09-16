@@ -1,37 +1,25 @@
-// File: app/patient-tabs/records.js
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import i18n from '../translations';
-import { getPatientDatabase } from '../dataStore';
+import { getPatientData } from '../dataStore'; // Updated import
 
-export default function RecordsScreen() {
-  const params = useLocalSearchParams();
-  const { contact } = params;
+export default function PatientRecordsScreen() {
   const [patientRecords, setPatientRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRecords = async () => {
-      try {
-        const allPatients = await getPatientDatabase();
-        const currentPatient = allPatients[contact];
-        
-        if (currentPatient && Array.isArray(currentPatient.records)) {
-          setPatientRecords(currentPatient.records);
-        } else {
-          setPatientRecords([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch patient records:", error);
+      const data = getPatientData();
+      if (data && Array.isArray(data.records)) {
+        setPatientRecords(data.records);
+      } else {
         setPatientRecords([]);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
+
     fetchRecords();
-  }, [contact]);
+  }, []);
 
   if (loading) {
     return (
@@ -43,57 +31,45 @@ export default function RecordsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.recordsTitle}>{i18n.t('myMedicalRecords')}</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.headerTitle}>{i18n.t('myMedicalRecords')}</Text>
       
       {patientRecords.length > 0 ? (
-        <ScrollView style={styles.recordsList}>
-          {patientRecords.map((record, index) => (
-            <View key={index} style={styles.recordItem}>
-              {record.imageUri && (
-                <Image source={{ uri: record.imageUri }} style={styles.recordImage} />
-              )}
-              <Text style={styles.recordDescription}>{record.description}</Text>
-              <Text style={styles.recordDate}>{new Date(record.timestamp).toLocaleDateString()}</Text>
-            </View>
-          ))}
-        </ScrollView>
+        patientRecords.map((record, index) => (
+          <View key={index} style={styles.recordCard}>
+            <Text style={styles.recordTitle}>Record #{patientRecords.length - index}</Text>
+            <Text style={styles.recordDate}>Date: {new Date(record.timestamp).toLocaleDateString()}</Text>
+            <Text style={styles.recordDescription}>{record.description}</Text>
+            {record.imageUri && (
+              <Image source={{ uri: record.imageUri }} style={styles.recordImage} />
+            )}
+          </View>
+        ))
       ) : (
         <View style={styles.noRecordsContainer}>
           <Text style={styles.noRecordsText}>{i18n.t('noRecordsFound')}</Text>
+          <Text style={styles.noRecordsSubText}>{i18n.t('yourHealthWorkerWillAddRecords')}</Text>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#E0F7FA',
-    padding: 25,
+    padding: 20,
+    paddingTop: 50,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#00796B',
-  },
-  recordsTitle: {
-    fontSize: 22,
+  headerTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#004D40',
-    marginBottom: 15,
-    alignSelf: 'flex-start',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  recordsList: {
-    width: '100%',
-  },
-  recordItem: {
+  recordCard: {
     backgroundColor: '#fff',
     borderRadius: 15,
     padding: 15,
@@ -101,33 +77,58 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    shadowRadius: 4,
     elevation: 3,
+  },
+  recordTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#00796B',
+  },
+  recordDate: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 5,
+  },
+  recordDescription: {
+    fontSize: 16,
+    color: '#333',
+    marginTop: 10,
   },
   recordImage: {
     width: '100%',
     height: 200,
     borderRadius: 10,
-    marginBottom: 10,
-  },
-  recordDescription: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 5,
-  },
-  recordDate: {
-    fontSize: 12,
-    color: '#999',
-    alignSelf: 'flex-end',
+    marginTop: 10,
+    resizeMode: 'cover',
   },
   noRecordsContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   noRecordsText: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#666',
     textAlign: 'center',
+    marginBottom: 5,
+  },
+  noRecordsSubText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E0F7FA',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#00796B',
   },
 });

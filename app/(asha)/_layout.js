@@ -10,6 +10,15 @@ export default function AshaWorkerTabs() {
       tabBarActiveTintColor: '#00796B',
       tabBarLabelStyle: { fontSize: 12 },
     }}>
+      <Tabs.Screen 
+        name="dashboard"
+        options={{
+          title: i18n.t('dashboard'),
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="view-dashboard-outline" size={size} color={color} />
+          ),
+        } }
+        />
       <Tabs.Screen
         name="migrant_signup"
         options={{

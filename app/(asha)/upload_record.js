@@ -1,9 +1,10 @@
-// File: (asha)/upload_record.js
+// File: upload_record.js
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from 'expo-image-picker';
 import { getPatientDatabase, updatePatientRecords } from '../dataStore';
 import i18n from '../translations';
 
@@ -11,38 +12,57 @@ export default function UploadRecordScreen() {
   const [patients, setPatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUri, setImageUri] = useState(null);
 
   useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+      }
+    })();
     const fetchPatients = async () => {
       const db = await getPatientDatabase();
       const patientList = Object.values(db).map(p => ({
-        id: p.id,
-        name: p.name
+        id: p.contact,
+        name: p.fullName
       }));
       setPatients(patientList);
     };
     fetchPatients();
   }, []);
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
   const handleUpload = async () => {
-    if (!selectedPatientId || !description) {
-      Alert.alert(i18n.t('error'), 'Please select a patient and enter a description.');
+    if (!selectedPatientId || !description || !imageUri) {
+      Alert.alert(i18n.t('error'), 'Please select a patient, an image, and enter a description.');
       return;
     }
 
     const newRecord = {
       description,
+      imageUri,
       timestamp: new Date().toISOString(),
-      // Add a placeholder for image URI if you implement image capture later
-      imageUri: null 
     };
 
     await updatePatientRecords(selectedPatientId, newRecord);
     Alert.alert(i18n.t('success'), 'Record uploaded successfully!');
     
-    // Clear the form
     setSelectedPatientId('');
     setDescription('');
+    setImageUri(null);
   };
 
   return (
@@ -65,10 +85,17 @@ export default function UploadRecordScreen() {
           </Picker>
         </View>
 
+        <Text style={styles.label}>Upload Image</Text>
+        <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+          <MaterialCommunityIcons name="image-plus" size={30} color="#fff" />
+          <Text style={styles.imageButtonText}>Select Image</Text>
+        </TouchableOpacity>
+        {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
+        
         <Text style={styles.label}>Record Details</Text>
         <TextInput
           style={[styles.input, styles.multilineInput]}
-          placeholder="Enter description of the record (e.g., Blood pressure reading)"
+          placeholder="Enter description of the record..."
           multiline
           numberOfLines={4}
           value={description}
@@ -126,6 +153,27 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+  },
+  imageButton: {
+    backgroundColor: '#00796B',
+    padding: 15,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  imageButtonText: {
+    color: '#fff',
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 15,
   },
   input: {
     width: '100%',

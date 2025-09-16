@@ -21,14 +21,21 @@ export default function UploadRecordScreen() {
         Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
       }
     })();
+
     const fetchPatients = async () => {
       const db = await getPatientDatabase();
-      const patientList = Object.values(db).map(p => ({
-        id: p.contact,
-        name: p.fullName
-      }));
-      setPatients(patientList);
+
+      if (db && typeof db === "object") {
+        const patientList = Object.values(db).map(p => ({
+          id: p?.contact || "",
+          name: p?.fullName || "Unnamed Patient"
+        }));
+        setPatients(patientList);
+      } else {
+        setPatients([]);
+      }
     };
+
     fetchPatients();
   }, []);
 
@@ -59,7 +66,7 @@ export default function UploadRecordScreen() {
 
     await updatePatientRecords(selectedPatientId, newRecord);
     Alert.alert(i18n.t('success'), 'Record uploaded successfully!');
-    
+
     setSelectedPatientId('');
     setDescription('');
     setImageUri(null);
@@ -91,7 +98,7 @@ export default function UploadRecordScreen() {
           <Text style={styles.imageButtonText}>Select Image</Text>
         </TouchableOpacity>
         {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
-        
+
         <Text style={styles.label}>Record Details</Text>
         <TextInput
           style={[styles.input, styles.multilineInput]}

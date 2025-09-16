@@ -13,26 +13,29 @@ export default function DoctorDashboardScreen() {
   const [description, setDescription] = useState('');
   const [selectedImageUri, setSelectedImageUri] = useState(null);
 
-  const handleSearch = async () => {
-    if (!patientId) {
-      Alert.alert(i18n.t('invalidInput'), i18n.t('enterPatientId'));
-      return;
-    }
+ const handleSearch = async () => {
+  if (!patientId) {
+    Alert.alert(i18n.t('invalidInput'), i18n.t('enterPatientId'));
+    return;
+  }
 
-    const patientDatabase = await getPatientDatabase();
-    // This is the corrected line to handle undefined database
-    const foundPatient = Object.values(patientDatabase || {}).find(
-      (patient) => patient.id.toLowerCase() === patientId.toLowerCase()
-    );
+  const patientDatabase = await getPatientDatabase();
 
-    if (foundPatient) {
-      setPatientDetails(foundPatient);
-      Alert.alert(i18n.t('patientFound'), `${foundPatient.fullName}`);
-    } else {
-      setPatientDetails(null);
-      Alert.alert(i18n.t('notFound'), i18n.t('noPatientFound'));
-    }
-  };
+  const foundPatient = Object.values(patientDatabase || {}).find(
+    (patient) =>
+      patient &&
+      patient.id &&
+      patient.id.toLowerCase() === patientId.toLowerCase()
+  );
+
+  if (foundPatient) {
+    setPatientDetails(foundPatient);
+    Alert.alert(i18n.t('patientFound'), `${foundPatient.fullName}`);
+  } else {
+    setPatientDetails(null);
+    Alert.alert(i18n.t('notFound'), i18n.t('noPatientFound'));
+  }
+};
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();

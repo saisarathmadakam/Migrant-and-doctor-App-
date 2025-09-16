@@ -1,3 +1,4 @@
+
 // File: login.js
 
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ import {
   Alert, Image 
 } from 'react-native';
 import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { getPatientDatabase } from './dataStore'; 
 import i18n from './translations';
 
@@ -210,4 +211,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textDecorationLine: 'underline',
   },
-});
+}); 

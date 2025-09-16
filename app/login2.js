@@ -15,7 +15,7 @@ export default function AshaWorkerLogin() {
       Alert.alert(
         t('loginSuccess'),
         t('navigatingToDashboard'),
-        [{ text: "OK", onPress: () => router.push('/migrant_signup') }]
+        [{ text: "OK", onPress: () => router.push('/dashboard') }]
       );
     } else {
       Alert.alert(t('loginFailed'), t('enterDetails'));

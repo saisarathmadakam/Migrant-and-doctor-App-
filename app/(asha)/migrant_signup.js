@@ -7,12 +7,16 @@ import { useTranslation } from 'react-i18next';
 import { Picker } from '@react-native-picker/picker';
 import { addPatientToDatabase } from '../dataStore';
 
-// Data for districts of Kerala
-const districtsOfKerala = [
-  'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam',
-  'Idukki', 'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode',
-  'Wayanad', 'Kannur', 'Kasaragod'
-];
+// Data for states and districts
+const statesOfIndia = {
+  Kerala: [
+    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam',
+    'Idukki', 'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode',
+    'Wayanad', 'Kannur', 'Kasaragod'
+  ],
+  TamilNadu: ['Chennai', 'Coimbatore', 'Madurai', 'Salem'], // example
+  Karnataka: ['Bangalore', 'Mysore', 'Mangalore'], // example
+};
 
 export default function MigrantSignup() {
   const { t } = useTranslation();
@@ -22,8 +26,9 @@ export default function MigrantSignup() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
   const [contact, setContact] = useState('');
+  const [aadhaar, setAadhaar] = useState(''); // Added Aadhaar number
 
-  // Location Info - Now with Selectors
+  // Location Info
   const [state, setState] = useState('');
   const [district, setDistrict] = useState('');
   const [city, setCity] = useState('');
@@ -31,6 +36,8 @@ export default function MigrantSignup() {
 
   // Migration Info
   const [migrantType, setMigrantType] = useState('');
+  const [migrationState, setMigrationState] = useState(''); // State near Migration Type
+  const [migrationDistrict, setMigrationDistrict] = useState(''); // District near Migration Type
   const [chronicDiseases, setChronicDiseases] = useState('');
   const [pregnancyDetails, setPregnancyDetails] = useState('');
 
@@ -39,23 +46,25 @@ export default function MigrantSignup() {
   const [incomingDetails, setIncomingDetails] = useState('');
 
   const handleSignup = async () => {
-    if (!fullName || !age || !contact || !migrantType || !state || !district) {
-      Alert.alert(t('error'), 'Please fill in all required fields (Name, Age, Contact, Migrant Type, State, and District).');
+    if (!fullName || !age || !contact || !migrantType || !state || !district || !aadhaar) {
+      Alert.alert(t('error'), 'Please fill in all required fields (Name, Age, Contact, Aadhaar, Migrant Type, State, and District).');
       return;
     }
 
-    // Create the new patient object with all the details
     const patientData = {
       id: contact,
       fullName,
       age,
       gender,
       contact,
+      aadhaar, // Added
       state,
       district,
       city,
       village,
       migrantType,
+      migrationState,       // Added
+      migrationDistrict,    // Added
       chronicDiseases,
       pregnancyDetails,
       returneeDetails: migrantType === 'Returnee' ? returneeDetails : null,
@@ -92,33 +101,27 @@ export default function MigrantSignup() {
           </View>
         </View>
         <TextInput style={styles.input} placeholder="Phone number" keyboardType="phone-pad" value={contact} onChangeText={setContact} />
+        <TextInput style={styles.input} placeholder="Aadhaar number" keyboardType="numeric" value={aadhaar} onChangeText={setAadhaar} />
       </View>
 
-      {/* Location Info with Selectors */}
+      {/* Location Info */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Location Info</Text>
-
         <View style={styles.input}>
-          <Picker
-            selectedValue={state}
-            onValueChange={(itemValue) => setState(itemValue)}
-            style={{ height: 50 }}
-          >
+          <Picker selectedValue={state} onValueChange={(itemValue) => { setState(itemValue); setDistrict(''); }} style={{ height: 50 }}>
             <Picker.Item label="Select State" value="" />
-            <Picker.Item label="Kerala" value="Kerala" />
+            {Object.keys(statesOfIndia).map((s, idx) => (
+              <Picker.Item key={idx} label={s} value={s} />
+            ))}
           </Picker>
         </View>
 
         <View style={styles.input}>
-          <Picker
-            selectedValue={district}
-            onValueChange={(itemValue) => setDistrict(itemValue)}
-            style={{ height: 50 }}
-          >
+          <Picker selectedValue={district} onValueChange={setDistrict} style={{ height: 50 }}>
             <Picker.Item label="Select District" value="" />
-            {districtsOfKerala.map((d, index) => (
-              <Picker.Item key={index} label={d} value={d} />
-            ))}
+            {state ? statesOfIndia[state].map((d, idx) => (
+              <Picker.Item key={idx} label={d} value={d} />
+            )) : null}
           </Picker>
         </View>
 
@@ -140,6 +143,25 @@ export default function MigrantSignup() {
             onPress={() => setMigrantType('Incoming')}>
             <Text style={[styles.typeText, migrantType === 'Incoming' && styles.selectedTypeText]}>Incoming</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* State & District near Migration Type */}
+        <Text style={{ marginTop: 15, fontWeight: 'bold', color: '#00796B' }}>Migration Origin</Text>
+        <View style={styles.input}>
+          <Picker selectedValue={migrationState} onValueChange={(val) => { setMigrationState(val); setMigrationDistrict(''); }} style={{ height: 50 }}>
+            <Picker.Item label="Select State" value="" />
+            {Object.keys(statesOfIndia).map((s, idx) => (
+              <Picker.Item key={idx} label={s} value={s} />
+            ))}
+          </Picker>
+        </View>
+        <View style={styles.input}>
+          <Picker selectedValue={migrationDistrict} onValueChange={setMigrationDistrict} style={{ height: 50 }}>
+            <Picker.Item label="Select District" value="" />
+            {migrationState ? statesOfIndia[migrationState].map((d, idx) => (
+              <Picker.Item key={idx} label={d} value={d} />
+            )) : null}
+          </Picker>
         </View>
       </View>
 
@@ -169,85 +191,19 @@ export default function MigrantSignup() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#E0F7FA',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#004D40',
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#00796B',
-  },
-  input: {
-    width: '100%',
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginBottom: 15,
-    backgroundColor: '#F9F9F9',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  halfInput: {
-    width: '48%',
-  },
-  typeSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-  },
-  typeButton: {
-    flex: 1,
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  selectedType: {
-    backgroundColor: '#00796B',
-  },
-  typeText: {
-    color: '#555',
-  },
-  selectedTypeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  submitButton: {
-    backgroundColor: '#00796B',
-    padding: 18,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#E0F7FA' },
+  header: { alignItems: 'center', marginBottom: 20 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#004D40' },
+  card: { backgroundColor: '#fff', borderRadius: 10, padding: 20, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: '#00796B' },
+  input: { width: '100%', paddingHorizontal: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 15, backgroundColor: '#F9F9F9' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
+  halfInput: { width: '48%' },
+  typeSelector: { flexDirection: 'row', backgroundColor: '#F0F0F0', borderRadius: 8 },
+  typeButton: { flex: 1, padding: 10, alignItems: 'center', borderRadius: 8 },
+  selectedType: { backgroundColor: '#00796B' },
+  typeText: { color: '#555' },
+  selectedTypeText: { color: '#fff', fontWeight: 'bold' },
+  submitButton: { backgroundColor: '#00796B', padding: 18, borderRadius: 10, alignItems: 'center', marginTop: 20 },
+  submitButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });

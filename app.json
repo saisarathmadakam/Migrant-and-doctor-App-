@@ -22,7 +22,8 @@
       "predictiveBackGestureEnabled": false,
       "config": {
         "android.usesCleartextTraffic": true
-      }
+      },
+      "package": "com.saisarath.HealthWealth"
     },
     "web": {
       "output": "static",
@@ -47,6 +48,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9ccd89c6-23c1-4259-8dab-406d6f0f12d4"
+      }
     }
   }
 }

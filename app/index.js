@@ -1,4 +1,3 @@
-//SplashScreen 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 import { router } from 'expo-router';
@@ -14,7 +13,8 @@ export default function SplashScreen() {
     }).start();
 
     const timer = setTimeout(() => {
-      router.replace('/home'); // Changed navigation to go to the new home screen
+      // Changed navigation to go to the new LanguageScreen
+      router.replace('/LanguageScreen'); 
     }, 3000);
 
     return () => clearTimeout(timer);

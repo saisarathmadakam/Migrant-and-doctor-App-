@@ -1,9 +1,10 @@
-// File: doctor-dashboard.js
+// File: app/doctor-dashboard.js
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { getPatientDatabase, updatePatientRecords } from './dataStore';
 import i18n from './translations';
 
@@ -11,150 +12,259 @@ export default function DoctorDashboardScreen() {
   const [patientId, setPatientId] = useState('');
   const [patientDetails, setPatientDetails] = useState(null);
   const [description, setDescription] = useState('');
-  const [selectedImageUri, setSelectedImageUri] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null); // { uri, type, name }
+  const [uploading, setUploading] = useState(false);
 
- const handleSearch = async () => {
-  if (!patientId) {
-    Alert.alert(i18n.t('invalidInput'), i18n.t('enterPatientId'));
-    return;
-  }
-
-  const patientDatabase = await getPatientDatabase();
-
-  const foundPatient = Object.values(patientDatabase || {}).find(
-    (patient) =>
-      patient &&
-      patient.id &&
-      patient.id.toLowerCase() === patientId.toLowerCase()
-  );
-
-  if (foundPatient) {
-    setPatientDetails(foundPatient);
-    Alert.alert(i18n.t('patientFound'), `${foundPatient.fullName}`);
-  } else {
-    setPatientDetails(null);
-    Alert.alert(i18n.t('notFound'), i18n.t('noPatientFound'));
-  }
-};
-
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(i18n.t('permissionDenied'), i18n.t('cameraRollPermission'));
+  const handleSearch = async () => {
+    if (!patientId) {
+      Alert.alert(i18n.t('invalidInput'), i18n.t('enterPatientId'));
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      const patientDatabase = await getPatientDatabase();
+      const foundPatient = Object.values(patientDatabase || {}).find(
+        (patient) => patient && patient.id && patient.id.toLowerCase() === patientId.toLowerCase()
+      );
+
+      if (foundPatient) {
+        setPatientDetails(foundPatient);
+        Alert.alert(i18n.t('patientFound'), `${foundPatient.fullName}`);
+      } else {
+        setPatientDetails(null);
+        Alert.alert(i18n.t('notFound'), i18n.t('noPatientFound'));
+      }
+    } catch (error) {
+      console.error("Failed to search patient:", error);
+      Alert.alert(i18n.t('error'), i18n.t('searchFailed'));
+    }
+  };
+
+  const selectMedia = async (useCamera) => {
+    let permissionStatus;
+    if (useCamera) {
+      permissionStatus = await ImagePicker.requestCameraPermissionsAsync();
+    } else {
+      permissionStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    }
+
+    if (permissionStatus.status !== 'granted') {
+      Alert.alert(i18n.t('permissionDenied'), i18n.t('mediaPermission'));
+      return;
+    }
+
+    let result;
+    if (useCamera) {
+      result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+    }
 
     if (!result.canceled) {
-      setSelectedImageUri(result.assets[0].uri);
+      setSelectedFile({
+        uri: result.assets[0].uri,
+        type: 'image',
+        name: `photo_${new Date().getTime()}.jpg`
+      });
+    }
+  };
+
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled) {
+        setSelectedFile({
+          uri: result.assets[0].uri,
+          type: 'pdf',
+          name: result.assets[0].name
+        });
+      }
+    } catch (err) {
+      console.error("Document picking failed:", err);
+      Alert.alert(i18n.t('error'), i18n.t('documentPickingFailed'));
     }
   };
 
   const handleUpload = async () => {
-    if (!patientDetails || !description || !selectedImageUri) {
+    if (!patientDetails || !description || !selectedFile) {
       Alert.alert(i18n.t('error'), i18n.t('uploadFieldsError'));
       return;
     }
-    
+    setUploading(true);
+
     const newRecord = {
       description,
-      imageUri: selectedImageUri,
+      fileUri: selectedFile.uri,
+      fileType: selectedFile.type,
+      fileName: selectedFile.name,
       timestamp: new Date().toISOString(),
     };
 
-    await updatePatientRecords(patientId, newRecord);
+    try {
+      const patientDatabase = await getPatientDatabase();
+      const patientKey = Object.keys(patientDatabase).find(
+        (key) => patientDatabase[key].id.toLowerCase() === patientId.toLowerCase()
+      );
 
-    Alert.alert(i18n.t('uploadSuccess'));
-    setDescription('');
-    setSelectedImageUri(null);
-    setPatientDetails(null);
+      if (patientKey) {
+        await updatePatientRecords(patientKey, newRecord);
+
+        const updatedDatabase = await getPatientDatabase();
+        setPatientDetails(updatedDatabase[patientKey]);
+
+        Alert.alert(i18n.t('uploadSuccess'));
+        setDescription('');
+        setSelectedFile(null);
+      } else {
+        Alert.alert(i18n.t('error'), i18n.t('noPatientFound'));
+      }
+    } catch (error) {
+      console.error("Failed to upload record:", error);
+      Alert.alert(i18n.t('error'), i18n.t('uploadFailed'));
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <MaterialCommunityIcons name="stethoscope" size={60} color="#00796B" style={styles.icon} />
-      <Text style={styles.title}>{i18n.t('doctorDashboard')}</Text>
-      
+      <View style={styles.header}>
+        <MaterialCommunityIcons name="stethoscope" size={40} color="#fff" />
+        <Text style={styles.headerTitle}>{i18n.t('doctorDashboard')}</Text>
+      </View>
+
       <View style={styles.searchBarWrapper}>
-        <View style={styles.searchContainer}>
-          <MaterialCommunityIcons name="magnify" size={24} color="#555" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={i18n.t('searchPatientId')}
-            value={patientId}
-            onChangeText={setPatientId}
-            onSubmitEditing={handleSearch}
-          />
-        </View>
+        <TextInput
+          style={styles.searchInput}
+          placeholder={i18n.t('searchPatientId')}
+          placeholderTextColor="#999"
+          value={patientId}
+          onChangeText={setPatientId}
+        />
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <Text style={styles.searchButtonText}>{i18n.t('search')}</Text>
+          <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
       {patientDetails ? (
         <ScrollView style={styles.conditionalContentContainer}>
-          <View style={styles.uploadForm}>
-            <Text style={styles.formTitle}>{i18n.t('uploadNewRecord')}</Text>
+          <View style={styles.patientInfoCard}>
+            <MaterialCommunityIcons name="account-circle" size={60} color="#00796B" style={styles.patientIcon} />
+            <View style={styles.patientDetailsText}>
+              <Text style={styles.patientName}>{patientDetails.fullName}</Text>
+              <Text style={styles.infoText}>{i18n.t('age')}: {patientDetails.age}</Text>
+              <Text style={styles.infoText}>{i18n.t('gender')}: {patientDetails.gender}</Text>
+              <Text style={styles.infoText}>{i18n.t('contact')}: {patientDetails.contact}</Text>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{i18n.t('uploadNewRecord')}</Text>
             
-            <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-              <MaterialCommunityIcons name="image-plus" size={24} color="#fff" />
-              <Text style={styles.imagePickerButtonText}>
-                {selectedImageUri ? i18n.t('imageSelected') : i18n.t('selectImage')}
-              </Text>
-            </TouchableOpacity>
-            {selectedImageUri && (
-              <Image source={{ uri: selectedImageUri }} style={styles.previewImage} />
+            <View style={styles.filePickerRow}>
+              <TouchableOpacity
+                style={styles.mediaButton}
+                onPress={() => Alert.alert(
+                  i18n.t('selectMedia'),
+                  i18n.t('chooseSource'),
+                  [
+                    { text: i18n.t('camera'), onPress: () => selectMedia(true) },
+                    { text: i18n.t('photoLibrary'), onPress: () => selectMedia(false) },
+                    { text: i18n.t('cancel'), style: 'cancel' }
+                  ]
+                )}
+                disabled={uploading}
+              >
+                <MaterialCommunityIcons name="camera" size={24} color="#fff" />
+                <Text style={styles.mediaButtonText}>{i18n.t('selectPhoto')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.documentButton}
+                onPress={pickDocument}
+                disabled={uploading}
+              >
+                <MaterialCommunityIcons name="file-document" size={24} color="#fff" />
+                <Text style={styles.mediaButtonText}>{i18n.t('selectDocument')}</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {selectedFile && selectedFile.type === 'image' && (
+              <Image source={{ uri: selectedFile.uri }} style={styles.previewImage} />
+            )}
+            {selectedFile && selectedFile.type === 'pdf' && (
+              <View style={styles.pdfPreview}>
+                <MaterialCommunityIcons name="file-pdf-box" size={50} color="#E53935" />
+                <Text style={styles.pdfName} numberOfLines={1}>{selectedFile.name}</Text>
+              </View>
             )}
 
             <TextInput
               style={styles.input}
               placeholder={i18n.t('enterDescription')}
+              placeholderTextColor="#999"
               multiline
               value={description}
               onChangeText={setDescription}
             />
-            <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
-              <MaterialCommunityIcons name="upload" size={24} color="#fff" />
-              <Text style={styles.uploadButtonText}>{i18n.t('upload')}</Text>
+
+            <TouchableOpacity
+              style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
+              onPress={handleUpload}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="upload" size={24} color="#fff" />
+                  <Text style={styles.uploadButtonText}>{i18n.t('upload')}</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
-          <View style={styles.detailsContainer}>
-            <Text style={styles.detailsTitle}>{i18n.t('patientInformation')}</Text>
-            <Text style={styles.detailsText}><Text style={styles.label}>{i18n.t('id')}:</Text> {patientDetails.id}</Text>
-            <Text style={styles.detailsText}><Text style={styles.label}>{i18n.t('name')}:</Text> {patientDetails.fullName}</Text>
-            <Text style={styles.detailsText}><Text style={styles.label}>{i18n.t('age')}:</Text> {patientDetails.age}</Text>
-            <Text style={styles.detailsText}><Text style={styles.label}>{i18n.t('address')}:</Text> {patientDetails.address}</Text>
-          </View>
-
-          <View style={styles.recordsContainer}>
-            <Text style={styles.recordsTitle}>{i18n.t('recordsHistory')}</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{i18n.t('recordsHistory')}</Text>
             {patientDetails.records && patientDetails.records.length > 0 ? (
-              patientDetails.records.map((record, index) => (
-                <View key={index} style={styles.recordCard}>
-                  <Image source={{ uri: record.imageUri }} style={styles.recordImage} />
+              patientDetails.records.slice().reverse().map((record, index) => (
+                <View key={index} style={styles.recordItem}>
+                  {record.fileType === 'image' ? (
+                    <Image source={{ uri: record.fileUri }} style={styles.recordImage} />
+                  ) : (
+                    <MaterialCommunityIcons name="file-pdf-box" size={60} color="#E53935" style={styles.recordImage} />
+                  )}
                   <View style={styles.recordContent}>
                     <Text style={styles.recordDescription}>{record.description}</Text>
-                    <Text style={styles.recordDate}>
-                      {new Date(record.timestamp).toLocaleString()}
-                    </Text>
+                    <Text style={styles.recordDate}>{new Date(record.timestamp).toLocaleString()}</Text>
                   </View>
                 </View>
               ))
             ) : (
-              <Text style={styles.noRecordsText}>{i18n.t('noRecordsAvailable')}</Text>
+              <View style={styles.noRecordsContainer}>
+                <MaterialCommunityIcons name="folder-open" size={50} color="#ccc" />
+                <Text style={styles.noRecordsText}>{i18n.t('noRecordsAvailable')}</Text>
+              </View>
             )}
           </View>
-
         </ScrollView>
       ) : (
         <View style={styles.noDataContainer}>
+          <MaterialCommunityIcons name="account-search" size={80} color="#ccc" />
           <Text style={styles.noDataText}>{i18n.t('noDataText')}</Text>
         </View>
       )}
@@ -165,34 +275,40 @@ export default function DoctorDashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: '#E0F7FA',
-    padding: 25,
   },
-  icon: {
-    marginBottom: 10,
-    marginTop: 40,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#00796B',
+    paddingTop: 50,
+    paddingBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  title: {
-    fontSize: 28,
+  headerTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#00796B',
-    marginBottom: 25,
+    color: '#fff',
+    marginLeft: 10,
   },
   searchBarWrapper: {
     flexDirection: 'row',
+    padding: 20,
+    backgroundColor: '#E0F7FA',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 20,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  searchInput: {
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 50,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     height: 50,
+    fontSize: 16,
     marginRight: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -200,77 +316,122 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 3,
   },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-  },
   searchButton: {
     backgroundColor: '#00796B',
     height: 50,
-    paddingHorizontal: 25,
+    width: 50,
     borderRadius: 50,
     justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
-  searchButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   conditionalContentContainer: {
-    width: '100%',
     flex: 1,
-  },
-  detailsContainer: {
     width: '100%',
+    paddingHorizontal: 20,
+  },
+  card: {
     backgroundColor: '#fff',
     borderRadius: 15,
     padding: 20,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
-    marginBottom: 20,
   },
-  detailsTitle: {
+  cardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#00796B',
     marginBottom: 15,
   },
-  detailsText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 10,
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#004D40',
-  },
-  uploadForm: {
+  patientInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 15,
     padding: 20,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
-    marginBottom: 20,
   },
-  formTitle: {
-    fontSize: 18,
+  patientIcon: {
+    marginRight: 20,
+  },
+  patientDetailsText: {
+    flex: 1,
+  },
+  patientName: {
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#00796B',
-    marginBottom: 10,
+    color: '#004D40',
+    marginBottom: 5,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  filePickerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  mediaButton: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#004D40',
+    borderRadius: 12,
+    height: 50,
+    marginRight: 10,
+  },
+  documentButton: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#004D40',
+    borderRadius: 12,
+    height: 50,
+    marginLeft: 10,
+  },
+  mediaButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 5,
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 15,
+    resizeMode: 'cover',
+  },
+  pdfPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+  },
+  pdfName: {
+    flex: 1,
+    marginLeft: 15,
+    fontSize: 16,
+    color: '#333',
   },
   input: {
     backgroundColor: '#f5f5f5',
@@ -283,28 +444,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlignVertical: 'top',
   },
-  imagePickerButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#004D40',
-    borderRadius: 12,
-    height: 50,
-    marginBottom: 15,
-  },
-  imagePickerButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  previewImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 15,
-    resizeMode: 'cover',
-  },
   uploadButton: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -313,13 +452,42 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     height: 50,
   },
+  uploadButtonDisabled: {
+    backgroundColor: '#999',
+  },
   uploadButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
   },
+  recordItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingVertical: 10,
+  },
+  recordImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 15,
+  },
+  recordContent: {
+    flex: 1,
+  },
+  recordDescription: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 5,
+  },
+  recordDate: {
+    fontSize: 12,
+    color: '#666',
+  },
   noDataContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -328,17 +496,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    marginTop: 10,
   },
-  recordsContainer: {
-    width: '100%', backgroundColor: '#fff', borderRadius: 15, padding: 20,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1,
-    shadowRadius: 3.84, elevation: 5, marginBottom: 20,
+  noRecordsContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  recordsTitle: { fontSize: 20, fontWeight: 'bold', color: '#00796B', marginBottom: 15 },
-  recordCard: { flexDirection: 'row', marginBottom: 15, borderBottomWidth: 1, borderBottomColor: '#eee', paddingBottom: 10 },
-  recordImage: { width: 60, height: 60, borderRadius: 10, marginRight: 15 },
-  recordContent: { flex: 1 },
-  recordDescription: { fontSize: 16, color: '#333', marginBottom: 5 },
-  recordDate: { fontSize: 12, color: '#666' },
-  noRecordsText: { fontSize: 14, color: '#999', textAlign: 'center' },
+  noRecordsText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 5,
+  },
 });

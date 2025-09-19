@@ -76,6 +76,14 @@ export default function AshaWorkerLogin() {
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>{t("login")}</Text>
             </TouchableOpacity>
+
+            {/* Go Back Button */}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.push("/home")}
+            >
+              <Text style={styles.backButtonText}>{t("goBack")}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -149,5 +157,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     textTransform: "uppercase",
+  },
+  backButton: {
+    marginTop: 15,
+    width: "100%",
+    height: 55,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backButtonText: {
+    color: "#004D40",
+    fontSize: 16,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

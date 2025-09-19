@@ -63,7 +63,7 @@ export default function AshaWorkerDashboardScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.accessButton} onPress={handleUpdateRecords}>
             <MaterialCommunityIcons name="file-document-edit" size={24} color="#00796B" />
-            <Text style={styles.accessButtonText}>{i18n.t('updateRecords')}</Text>
+            <Text style={styles.accessButtonText}>{i18n.t('Upload Records')}</Text>
           </TouchableOpacity>
         </View>
 

@@ -1,6 +1,4 @@
-// File: home.js
-
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,12 +7,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen() {
   const { i18n } = useTranslation();
-  const [activeLanguage, setActiveLanguage] = useState(i18n.language);
-
-  const handleLanguageChange = (lang) => {
-    i18n.changeLanguage(lang);
-    setActiveLanguage(lang);
-  };
 
   return (
     <LinearGradient colors={['#E0F7FA', '#B2DFDB']} style={styles.gradient}>
@@ -22,13 +14,10 @@ export default function HomeScreen() {
         
         {/* Illustration (Hero Image) */}
         <Image 
-          source={require('../assets/images/health.png')}   // <-- Place your health image here
+          source={require('../assets/images/health.png')} 
           style={styles.heroImage}
           resizeMode="contain"
         />
-
-        {/* App Icon */}
-        
 
         {/* Title */}
         <Text style={styles.title}>{i18n.t('chooseYourLogin')}</Text>
@@ -38,29 +27,6 @@ export default function HomeScreen() {
           <Text style={styles.infoText}>
             {i18n.t('welcomeMessage', { defaultValue: 'Your Health Our Priority' })}
           </Text>
-        </View>
-
-        {/* Language Selection Buttons */}
-        <View style={styles.languageContainer}>
-          {['en', 'te', 'hi', 'ml'].map((lang) => (
-            <TouchableOpacity
-              key={lang}
-              style={[
-                styles.languageButton,
-                activeLanguage === lang && styles.activeButton
-              ]}
-              onPress={() => handleLanguageChange(lang)}
-            >
-              <Text
-                style={[
-                  styles.languageButtonText,
-                  activeLanguage === lang && styles.activeButtonText
-                ]}
-              >
-                {i18n.t(`language.${lang}`)}
-              </Text>
-            </TouchableOpacity>
-          ))}
         </View>
 
         {/* Patient Login Button */}
@@ -131,32 +97,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
   },
-  languageContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    justifyContent: 'center',
-    width: '100%',
-    paddingHorizontal: 10,
-  },
-  languageButton: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    backgroundColor: '#B2DFDB',
-    borderRadius: 8,
-    marginHorizontal: 5,
-    elevation: 2,
-  },
-  languageButtonText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#004D40',
-  },
-  activeButton: {
-    backgroundColor: '#004D40',
-  },
-  activeButtonText: {
-    color: '#FFFFFF',
-  },
+  // The languageContainer and languageButton styles are no longer needed here
   button: {
     flexDirection: 'row',
     width: '85%',

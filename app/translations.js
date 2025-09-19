@@ -13,10 +13,11 @@ const resources = {
         "hi": "हिंदी",
         "ml": "മലയാളം",
       },
+      "languageSelectionTitle": "Choose Your Language",
       "chooseYourLogin": "Choose Your Login",
-      "patientLogin": "Patient Login",
+      "MigrantLogin": "MigrantLogin", // English
       "doctorLogin": "Doctor Login",
-      "ashaWorkerLogin": "Asha Worker Login", // New
+      "ashaWorkerLogin": "Asha Worker Login", // English
       "doctorDashboard": "Doctor Dashboard",
       "searchPatientId": "Search Patient ID",
       "patientFound": "Patient Found",
@@ -37,6 +38,7 @@ const resources = {
       "id": "ID",
       "name": "Name",
       "age": "Age",
+      "invalidOtp": "Invalid OTP. Please try again.",
       "address": "Address",
       "recordsHistory": "Records History",
       "noRecordsAvailable": "No records available for this patient.",
@@ -61,17 +63,20 @@ const resources = {
       "myMedicalRecords": "My Medical Records",
       "noRecordsFound": "No medical records found.",
       "homeScreenTitle": "Digital Health Records",
-      "Enter AshaId": "Enter Asha ID", // New
-      "migrantSignup": "Migrant Signup", // New
-      "fullName": "Full Name", // New
-      "phoneNumber": "Phone Number", // New
-      "state": "State", // New
-      "district": "District", // New
-      "village": "Village/Town", // New
-      "signup": "Signup", // New
-      "fillAllDetails": "Please fill all details.", // New
-      "signupSuccess": "Signup Successful", // New
-      "patientAccountCreated": "A new patient account has been created." // New
+      "Enter AshaId": "Enter Asha ID",
+      "migrantSignup": "Migrant Signup",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "state": "State",
+      "district": "District",
+      "village": "Village/Town",
+      "signup": "Signup",
+      "fillAllDetails": "Please fill all details.",
+      "signupSuccess": "Signup Successful",
+      "patientAccountCreated": "A new patient account has been created.",
+      "welcomeMessage": "Your Health Our Priority",
+      "search": "Search",
+      "noDataText": "Search for a patient using their ID to view their information and records."
     }
   },
   te: {
@@ -82,12 +87,15 @@ const resources = {
         "hi": "हिंदी",
         "ml": "മലയാളം",
       },
+      "languageSelectionTitle": "మీ భాషను ఎంచుకోండి",
       "chooseYourLogin": "మీ లాగిన్‌ను ఎంచుకోండి",
-      "patientLogin": "రోగి లాగిన్",
+      "MigrantLogin": "వలసదారు లాగిన్", // Telugu
       "doctorLogin": "డాక్టర్ లాగిన్",
-      "AshaWorkerLogin": "ఆశా వర్కర్ లాగిన్", // New
+      "ashaWorkerLogin": "ఆశా వర్కర్ లాగిన్", // Telugu
       "doctorDashboard": "డాక్టర్ డాష్‌బోర్డ్",
       "searchPatientId": "రోగి IDని శోధించండి",
+      "invalidOtp": "చెల్లని OTP. దయచేసి మళ్లీ ప్రయత్నించండి.",
+
       "patientFound": "రోగి దొరికారు",
       "noPatientFound": "ఆ IDతో రోగి దొరకలేదు.",
       "invalidInput": "చెల్లని ఇన్‌పుట్",
@@ -130,17 +138,20 @@ const resources = {
       "myMedicalRecords": "నా వైద్య రికార్డులు",
       "noRecordsFound": "వైద్య రికార్డులు దొరకలేదు.",
       "homeScreenTitle": "డిజిటల్ హెల్త్ రికార్డ్స్",
-      "Enter AshaId": "ఆశా ఐడి నమోదు చేయండి", // New
-      "migrantSignup": "వలసదారు నమోదు", // New
-      "fullName": "పూర్తి పేరు", // New
-      "phoneNumber": "ఫోన్ నంబర్", // New
-      "state": "రాష్ట్రం", // New
-      "district": "జిల్లా", // New
-      "village": "గ్రామం/పట్టణం", // New
-      "signup": "నమోదు చేయండి", // New
-      "fillAllDetails": "దయచేసి అన్ని వివరాలను పూరించండి.", // New
-      "signupSuccess": "నమోదు విజయవంతమైంది", // New
-      "patientAccountCreated": "కొత్త రోగి ఖాతా సృష్టించబడింది." // New
+      "Enter AshaId": "ఆశా ఐడి నమోదు చేయండి",
+      "migrantSignup": "వలసదారు నమోదు",
+      "fullName": "పూర్తి పేరు",
+      "phoneNumber": "ఫోన్ నంబర్",
+      "state": "రాష్ట్రం",
+      "district": "జిల్లా",
+      "village": "గ్రామం/పట్టణం",
+      "signup": "నమోదు చేయండి",
+      "fillAllDetails": "దయచేసి అన్ని వివరాలను పూరించండి.",
+      "signupSuccess": "నమోదు విజయవంతమైంది",
+      "patientAccountCreated": "కొత్త రోగి ఖాతా సృష్టించబడింది.",
+      "welcomeMessage": "మీ ఆరోగ్యం మా ప్రాధాన్యత",
+      "search": "శోధించండి",
+      "noDataText": "వారి సమాచారం మరియు రికార్డులను చూడటానికి వారి IDని ఉపయోగించి రోగి కోసం శోధించండి."
     }
   },
   hi: {
@@ -151,10 +162,12 @@ const resources = {
         "hi": "हिंदी",
         "ml": "മലയാളം",
       },
+      "languageSelectionTitle": "अपनी भाषा चुनें",
       "chooseYourLogin": "अपना लॉगिन चुनें",
-      "patientLogin": "रोगी लॉगिन",
+      "MigrantLogin": "प्रवासी लॉगिन", // Hindi
       "doctorLogin": "डॉक्टर लॉगिन",
-      "AshaWorkerLogin": "आशा वर्कर लॉगिन", // New
+      "invalidOtp": "अमान्य ओटीपी। कृपया पुनः प्रयास करें।",
+      "ashaWorkerLogin": "आशा वर्कर लॉगिन", // Hindi
       "doctorDashboard": "डॉक्टर डैशबोर्ड",
       "searchPatientId": "रोगी आईडी खोजें",
       "patientFound": "रोगी मिला",
@@ -199,17 +212,20 @@ const resources = {
       "myMedicalRecords": "मेरे चिकित्सा रिकॉर्ड",
       "noRecordsFound": "कोई चिकित्सा रिकॉर्ड नहीं मिला।",
       "homeScreenTitle": "डिजिटल स्वास्थ्य रिकॉर्ड",
-      "Enter AshaId": "आशा आईडी दर्ज करें", // New
-      "migrantSignup": "प्रवासी पंजीकरण", // New
-      "fullName": "पूरा नाम", // New
-      "phoneNumber": "फ़ोन नंबर", // New
-      "state": "राज्य", // New
-      "district": "ज़िला", // New
-      "village": "गाँव/कस्बा", // New
-      "signup": "साइन अप करें", // New
-      "fillAllDetails": "कृपया सभी विवरण भरें।", // New
-      "signupSuccess": "पंजीकरण सफल", // New
-      "patientAccountCreated": "एक नया रोगी खाता बनाया गया है।" // New
+      "Enter AshaId": "आशा आईडी दर्ज करें",
+      "migrantSignup": "प्रवासी पंजीकरण",
+      "fullName": "पूरा नाम",
+      "phoneNumber": "फ़ोन नंबर",
+      "state": "राज्य",
+      "district": "ज़िला",
+      "village": "गाँव/कस्बा",
+      "signup": "साइन अप करें",
+      "fillAllDetails": "कृपया सभी विवरण भरें।",
+      "signupSuccess": "पंजीकरण सफल",
+      "patientAccountCreated": "एक नया रोगी खाता बनाया गया है।",
+      "welcomeMessage": "आपका स्वास्थ्य हमारी प्राथमिकता",
+      "search": "खोजें",
+      "noDataText": "उनकी जानकारी और रिकॉर्ड देखने के लिए उनकी आईडी का उपयोग करके किसी रोगी को खोजें।"
     }
   },
   ml: {
@@ -220,10 +236,11 @@ const resources = {
         "hi": "ഹിന്ദി",
         "ml": "മലയാളം",
       },
+      "languageSelectionTitle": "നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക",
       "chooseYourLogin": "നിങ്ങളുടെ ലോഗിൻ തിരഞ്ഞെടുക്കുക",
-      "patientLogin": "രോഗിയുടെ ലോഗിൻ",
+      "MigrantLogin": "കുടിയേറ്റക്കാരൻ്റെ ലോഗിൻ", // Malayalam
       "doctorLogin": "ഡോക്ടർ ലോഗിൻ",
-      "AshaWorkerLogin": "ആശ വർക്കർ ലോഗിൻ", // New
+      "ashaWorkerLogin": "ആശ വർക്കർ ലോഗിൻ", // Malayalam
       "doctorDashboard": "ഡോക്ടർ ഡാഷ്‌ബോർഡ്",
       "searchPatientId": "രോഗിയുടെ ഐഡി തിരയുക",
       "patientFound": "രോഗിയെ കണ്ടെത്തി",
@@ -234,6 +251,7 @@ const resources = {
       "cameraRollPermission": "ക്യാമറ റോൾ ആക്സസ് ചെയ്യാൻ അനുമതി ആവശ്യമാണ്!",
       "uploadSuccess": "റെക്കോർഡ് വിജയകരമായി അപ്‌ലോഡ് ചെയ്തു!",
       "error": "പിശക്",
+      "invalidOtp": "അസാധുവായ ഒടിപി. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
       "uploadFieldsError": "എല്ലാ ഫീൽഡുകളും പൂരിപ്പിച്ച് ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക.",
       "uploadNewRecord": "പുതിയ റെക്കോർഡ് അപ്‌ലോഡ് ചെയ്യുക",
       "imageSelected": "ചിത്രം തിരഞ്ഞെടുത്തു",
@@ -268,17 +286,20 @@ const resources = {
       "myMedicalRecords": "എൻ്റെ മെഡിക്കൽ റെക്കോർഡുകൾ",
       "noRecordsFound": "മെഡിക്കൽ റെക്കോർഡുകളൊന്നും കണ്ടെത്തിയില്ല.",
       "homeScreenTitle": "ഡിജിറ്റൽ ഹെൽത്ത് റെക്കോർഡ്സ്",
-      "Enter AshaId": "ആശ ഐഡി നൽകുക", // New
-      "migrantSignup": "കുടിയേറ്റക്കാരൻ്റെ രജിസ്ട്രേഷൻ", // New
-      "fullName": "പൂർണ്ണമായ പേര്", // New
-      "phoneNumber": "ഫോൺ നമ്പർ", // New
-      "state": "സംസ്ഥാനം", // New
-      "district": "ജില്ല", // New
-      "village": "ഗ്രാമം/പട്ടണം", // New
-      "signup": "രജിസ്റ്റർ ചെയ്യുക", // New
-      "fillAllDetails": "എല്ലാ വിവരങ്ങളും പൂരിപ്പിക്കുക.", // New
-      "signupSuccess": "രജിസ്ട്രേഷൻ വിജയിച്ചു", // New
-      "patientAccountCreated": "ഒരു പുതിയ രോഗി അക്കൗണ്ട് സൃഷ്ടിച്ചു." // New
+      "Enter AshaId": "ആശ ഐഡി നൽകുക",
+      "migrantSignup": "കുടിയേറ്റക്കാരൻ്റെ രജിസ്ട്രേഷൻ",
+      "fullName": "പൂർണ്ണമായ പേര്",
+      "phoneNumber": "ഫോൺ നമ്പർ",
+      "state": "സംസ്ഥാനം",
+      "district": "ജില്ല",
+      "village": "ഗ്രാമം/പട്ടണം",
+      "signup": "രജിസ്റ്റർ ചെയ്യുക",
+      "fillAllDetails": "എല്ലാ വിവരങ്ങളും പൂരിപ്പിക്കുക.",
+      "signupSuccess": "രജിസ്ട്രേഷൻ വിജയിച്ചു",
+      "patientAccountCreated": "ഒരു പുതിയ രോഗി അക്കൗണ്ട് സൃഷ്ടിച്ചു.",
+      "welcomeMessage": "നിങ്ങളുടെ ആരോഗ്യം ഞങ്ങളുടെ മുൻഗണന",
+      "search": "തിരയുക",
+      "noDataText": "അവരുടെ വിവരങ്ങളും രേഖകളും കാണാൻ അവരുടെ ഐഡി ഉപയോഗിച്ച് ഒരു രോഗിയെ തിരയുക."
     }
   }
 };

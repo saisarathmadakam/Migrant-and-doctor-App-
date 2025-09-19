@@ -1,15 +1,18 @@
-
-// File: login.js
-
 import React, { useState } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, 
-  StyleSheet, KeyboardAvoidingView, Platform, 
-  Alert, Image 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
-import { getPatientDatabase } from './dataStore'; 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { getPatientDatabase } from './dataStore';
 import i18n from './translations';
 
 export default function PatientLoginScreen() {
@@ -26,9 +29,12 @@ export default function PatientLoginScreen() {
         Alert.alert(i18n.t('accountNotFound'), i18n.t('invalidPhoneNumber'));
         return;
       }
-      const newOtp = '123456'; 
+      const newOtp = '123456';
       setGeneratedOtp(newOtp);
-      Alert.alert(i18n.t('otpSent'), `${i18n.t('yourOTP')} ${newOtp} (${i18n.t('mockOtp')})`);
+      Alert.alert(
+        i18n.t('otpSent'),
+        `${i18n.t('yourOTP')} ${newOtp} (${i18n.t('mockOtp')})`
+      );
       setIsOtpSent(true);
     } else {
       Alert.alert(i18n.t('invalidPhoneNumber'), i18n.t('enterPhoneNumber'));
@@ -41,8 +47,6 @@ export default function PatientLoginScreen() {
     if (otp === generatedOtp) {
       const patientData = patientDatabase[phoneNumber];
       if (patientData) {
-        // 🚀 CRITICAL FIX: Ensure 'records' is an array before navigating.
-        // If it's undefined or null, set it to an empty array.
         if (!Array.isArray(patientData.records)) {
           patientData.records = [];
         }
@@ -61,24 +65,31 @@ export default function PatientLoginScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.container}>
-        <Image 
-          source={require('../assets/images/migrant.jpg')} 
-          style={styles.heroImage} 
+        <Image
+          source={require('../assets/images/migrant.jpg')}
+          style={styles.heroImage}
           resizeMode="contain"
         />
-        
-        <Text style={styles.title}>{i18n.t('patientLogin')}</Text>
-        <Text style={styles.subtitle}>Your Health, Our Priority</Text>
+
+        <Text style={styles.title}>{i18n.t('MigrantLogin')}</Text>
+
+        {/* wrap subtitle in Text */}
+        <Text style={styles.subtitle}>{i18n.t('welcomeMessage')}</Text>
 
         <View style={styles.card}>
           {!isOtpSent ? (
             <View style={styles.formContainer}>
               <Text style={styles.label}>{i18n.t('enterPhoneNumber')}</Text>
               <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons name="cellphone" size={22} color="#00796B" style={styles.inputIcon} />
+                <MaterialCommunityIcons
+                  name="cellphone"
+                  size={22}
+                  color="#00796B"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.input}
                   placeholder={i18n.t('enterPhoneNumber')}
@@ -96,7 +107,12 @@ export default function PatientLoginScreen() {
             <View style={styles.formContainer}>
               <Text style={styles.label}>{i18n.t('enterOTP')}</Text>
               <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons name="key-variant" size={22} color="#00796B" style={styles.inputIcon} />
+                <MaterialCommunityIcons
+                  name="key-variant"
+                  size={22}
+                  color="#00796B"
+                  style={styles.inputIcon}
+                />
                 <TextInput
                   style={styles.input}
                   placeholder={i18n.t('enterOTP')}
@@ -128,9 +144,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#E0F7FA',
     padding: 25,
-  },
-  icon: {
-    marginBottom: 10,
   },
   title: {
     fontSize: 28,
@@ -211,4 +224,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textDecorationLine: 'underline',
   },
-}); 
+});
